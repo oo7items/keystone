@@ -7,8 +7,8 @@ import fs from 'fs-extra';
 import slugify from '@sindresorhus/slugify';
 import { KeystoneConfig, FilesContext } from '../../types';
 import { parseFileRef } from '../../fields/types/file/utils';
-import { CloudAssetsAPI } from '../cloud/assets';
-import { S3AssetsAPI } from '../s3/assets';
+import { S3AssetsAPI } from './s3';
+import { CloudAssetsAPI } from './cloud';
 
 const DEFAULT_BASE_URL = '/files';
 export const DEFAULT_FILES_STORAGE_PATH = './public/files';

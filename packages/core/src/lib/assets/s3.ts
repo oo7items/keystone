@@ -3,7 +3,7 @@ import { S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { FileData, ImageExtension, ImageMetadata } from '../../types/context';
 import { S3Config } from '../../types';
-import { getImageMetadataFromBuffer } from '../context/createImagesContext';
+import { getImageMetadataFromBuffer } from './createImagesContext';
 
 async function streamToBuffer(stream: Readable): Promise<Buffer> {
   const chunks = [];
