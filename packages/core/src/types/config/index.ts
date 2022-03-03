@@ -1,4 +1,5 @@
 import type { Server } from 'http';
+import type { ListenOptions } from 'net';
 import type { Config } from 'apollo-server-express';
 import { CorsOptions } from 'cors';
 import express from 'express';
@@ -99,10 +100,11 @@ type HealthCheckConfig = {
 export type ServerConfig<TypeInfo extends BaseKeystoneTypeInfo> = {
   /** Configuration options for the cors middleware. Set to `true` to use core Keystone defaults */
   cors?: CorsOptions | true;
-  /** Port number to start the server on. Defaults to process.env.PORT || 3000 */
-  port?: number;
   /** Maximum upload file size allowed (in bytes) */
   maxFileSize?: number;
+  /** Port number to start the server on. Defaults to process.env.PORT || 3000 */
+  port?: number;
+  options?: ListenOptions; // TODO: only .port or .options should be supplied
   /** Health check configuration. Set to `true` to add a basic `/_healthcheck` route, or specify the path and data explicitly */
   healthCheck?: HealthCheckConfig | true;
   /** Hook to extend the Express App that Keystone creates */
