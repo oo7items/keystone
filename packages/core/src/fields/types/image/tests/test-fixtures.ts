@@ -69,7 +69,7 @@ export const skipRequiredTest = true;
 export const fieldName = 'avatar';
 export const subfieldName = 'extension';
 
-export const getTestFields = () => ({ avatar: image({ storage: 'image_test' }) });
+export const getTestFields = () => ({ avatar: image({ storage: 'test_image' }) });
 
 export const afterAll = (matrixValue: 's3' | 'local') => {
   if (matrixValue === 'local') {
