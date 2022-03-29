@@ -28,7 +28,14 @@ if (process.env.S3_BUCKET_NAME) {
 
 export const getRootConfig = (matrixValue: 's3' | 'local'): Partial<KeystoneConfig> => {
   if (matrixValue === 'local') {
-    return {};
+    return {
+      storage: {
+        test_file: {
+          kind: 'local',
+          type: 'file',
+        },
+      },
+    };
   }
   return {
     storage: {
@@ -59,8 +66,9 @@ export const supportsUnique = false;
 export const skipRequiredTest = true;
 export const fieldName = 'secretFile';
 export const subfieldName = 'filesize';
+export const fieldConfig = () => ({ storage: 'test_file' });
 
-export const getTestFields = () => ({ secretFile: file({ storage: 'test-storage' }) });
+export const getTestFields = () => ({ secretFile: file({ storage: 'test_file' }) });
 
 export const afterEach = async (matrixValue: 's3' | 'local') => {
   if (matrixValue === 'local') {
@@ -131,138 +139,6 @@ export const crudTests = (keystoneTestWrapper: any) => {
           );
         }
       )
-    );
-  });
-  describe('Create - ref', () => {
-    test(
-      'From existing item succeeds',
-      keystoneTestWrapper(async ({ context }: { context: any }) => {
-        // Create an initial item
-        const initialItem = await context.query.Test.createOne({
-          data: { secretFile: prepareFile('keystone.jpg') },
-          query: `
-            secretFile {
-              filename
-              __typename
-              filesize
-              ref
-              url
-            }
-        `,
-        });
-        expect(initialItem).not.toBe(null);
-
-        // Create a new item base on the first items ref
-        const ref = initialItem.secretFile.ref;
-        const newItem = await context.query.Test.createOne({
-          data: { secretFile: { ref } },
-          query: `
-            secretFile {
-              filename
-              __typename
-              filesize
-              ref
-              url
-            }
-        `,
-        });
-        expect(newItem).not.toBe(null);
-
-        // Check that the details of both items match
-        expect(newItem.secretFile).toEqual(initialItem.secretFile);
-      })
-    );
-    test(
-      'From invalid ref fails',
-      keystoneTestWrapper(async ({ context }: { context: any }) => {
-        const { data, errors } = await context.graphql.raw({
-          query: `
-            mutation ($item: TestCreateInput!) {
-                createTest(data: $item) {
-                    secretFile {
-                        filename
-                    }
-                }
-            }
-        `,
-          variables: { item: { secretFile: { ref: 'Invalid ref!' } } },
-        });
-        expect(data).toEqual({ createTest: null });
-        const message = `Invalid file reference`;
-        expectSingleResolverError(errors, 'createTest', 'Test.secretFile', message);
-      })
-    );
-    test(
-      'From null ref fails',
-      keystoneTestWrapper(async ({ context }: { context: any }) => {
-        const { data, errors } = await context.graphql.raw({
-          query: `
-            mutation ($item: TestCreateInput!) {
-                createTest(data: $item) {
-                    secretFile {
-                        filename
-                    }
-                }
-            }
-        `,
-          variables: { item: { secretFile: { ref: null } } },
-        });
-        expect(data).toEqual({ createTest: null });
-        const message = `Input error: Either ref or upload must be passed to FileFieldInput`;
-        expectSingleResolverError(errors, 'createTest', 'Test.secretFile', message);
-      })
-    );
-    test(
-      'Both upload and ref fails - valid ref',
-      keystoneTestWrapper(async ({ context }: { context: any }) => {
-        const initialItem = await context.query.Test.createOne({
-          data: { secretFile: prepareFile('keystone.jpg') },
-          query: `secretFile { ref }`,
-        });
-        expect(initialItem).not.toBe(null);
-
-        const { data, errors } = await context.graphql.raw({
-          query: `
-          mutation ($item: TestCreateInput!) {
-              createTest(data: $item) {
-                  secretFile {
-                     filename
-                  }
-              }
-          }
-      `,
-          variables: {
-            item: {
-              secretFile: { ref: initialItem.secretFile.ref, ...prepareFile('keystone.jpg') },
-            },
-          },
-        });
-        expect(data).toEqual({ createTest: null });
-        const message = `Input error: Only one of ref and upload can be passed to FileFieldInput`;
-        expectSingleResolverError(errors, 'createTest', 'Test.secretFile', message);
-      })
-    );
-    test(
-      'Both upload and ref fails - invalid ref',
-      keystoneTestWrapper(async ({ context }: { context: any }) => {
-        const { data, errors } = await context.graphql.raw({
-          query: `
-          mutation ($item: TestCreateInput!) {
-              createTest(data: $item) {
-                  secretFile {
-                      filename
-                  }
-              }
-          }
-      `,
-          variables: {
-            item: { secretFile: { ref: 'Invalid', ...prepareFile('keystone.jpg') } },
-          },
-        });
-        expect(data).toEqual({ createTest: null });
-        const message = `Input error: Only one of ref and upload can be passed to FileFieldInput`;
-        expectSingleResolverError(errors, 'createTest', 'Test.secretFile', message);
-      })
     );
   });
 };
